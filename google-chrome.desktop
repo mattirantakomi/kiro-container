@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Google Chrome
+Exec=google-chrome --no-sandbox --disable-gpu %u
+Icon=google-chrome
+MimeType=x-scheme-handler/http;x-scheme-handler/https;text/html;
+Terminal=false
+Categories=Network;WebBrowser;

@@ -1,55 +1,53 @@
 # Kiro IDE Docker Container
 
-Docker-kontaineri, jossa ajetaan Kiro IDE:tä VNC-palvelimen kautta. Tämä mahdollistaa IDE:n käytön turvallisesti ilman riskiä oman koneen sotkemisesta.
+A Docker container running Kiro IDE with a VNC server. This allows you to use the IDE safely without risking your host machine's configuration.
 
-## Ominaisuudet
+## Features
 
-- Ubuntu 26.04 LTS (Resolute Raccoon) -pohja
-- Kiro IDE esiasennettu
-- TigerVNC-palvelin (portti 5901)
-- noVNC web-client (portti 6080) — käytettävissä selaimella
-- XFCE4-työpöytäympäristö (kevyt)
-- Projekti-tiedostot mountataan `./workspace`-hakemistosta
+- Based on Ubuntu 26.04 LTS (Resolute Raccoon)
+- Kiro IDE pre-installed
+- TigerVNC server (port 5901)
+- noVNC web client (port 6080) — accessible via browser
+- XFCE4 desktop environment (lightweight)
+- Project files mounted from `./workspace`
 
-## Käynnistys
+## Getting Started
 
 ```bash
 docker compose up --build
 ```
 
-## Yhdistäminen
+## Connecting
 
-### Selaimella (noVNC)
+### Via Browser (noVNC)
 
-Avaa: http://localhost:6080/vnc.html
+Open: http://localhost:6080
 
-### VNC-clientillä
+### Via VNC Client
 
-Yhdistä osoitteeseen: `localhost:5901`  
-Oletussalasana: `kiro123`
+Connect to: `localhost:5901` (no password)
 
-## Kiro IDE:n käynnistys
+## Kiro IDE
 
-Kun olet yhdistänyt VNC-työpöytään, avaa terminaali ja aja:
+Kiro IDE launches automatically when the container starts. If you need to restart it manually, open a terminal in the desktop and run:
 
 ```bash
-kiro-ide --no-sandbox
+kiro --no-sandbox
 ```
 
-## Ympäristömuuttujat
+## Environment Variables
 
-| Muuttuja | Oletus | Kuvaus |
-|----------|--------|--------|
-| `VNC_PASSWORD` | `kiro123` | VNC-salasana |
-| `VNC_RESOLUTION` | `1920x1080` | Työpöydän resoluutio |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VNC_RESOLUTION` | `1920x1080` | Desktop resolution |
 
 ## Workspace
 
-Kansio `./workspace` mountataan kontaineriin polkuun `/home/kiro/workspace`. Tallenna projektisi sinne, niin ne säilyvät kontainerin uudelleenkäynnistyksessä.
+The `./workspace` folder is mounted into the container at `/home/kiro/workspace`. Save your projects there so they persist across container restarts.
 
-## Huomioita
+## Notes
 
-- `shm_size: 2gb` on tärkeä Chromium/Electron-pohjaisille sovelluksille (estää kaatumisia)
-- `seccomp=unconfined` tarvitaan, jotta Electron-sandbox toimii kontainerissa
-- `--no-sandbox` flagi tarvitaan Kiro IDE:n käynnistykseen Docker-kontainerissa
-- Kiro vaatii AWS-tilin kirjautumiseen (selainpohjainen OAuth)
+- `shm_size: 2gb` is important for Chromium/Electron-based apps (prevents crashes)
+- `seccomp=unconfined` is needed for Electron sandbox to work inside the container
+- `--no-sandbox` flag is required to run Kiro IDE inside Docker
+- Kiro requires an AWS account for sign-in (browser-based OAuth)

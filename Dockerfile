@@ -36,11 +36,29 @@ RUN apt-get update && apt-get install -y \
     # Useful dev tools
     git \
     sudo \
+    # Clipboard support for noVNC copy-paste
+    xclip \
+    xsel \
+    # Browser for OAuth login
+    # (chromium-browser is snap stub on Ubuntu 26.04, installed separately below)
+    fonts-liberation \
     # noVNC for browser-based access (optional)
     novnc \
     websockify \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Google Chrome (real browser, not snap stub)
+RUN wget -q -O /tmp/chrome.deb "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \
+    apt-get update && apt-get install -y /tmp/chrome.deb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && rm /tmp/chrome.deb
+
+# Set noVNC defaults: autoconnect, remote resize, fullscreen-like viewport
+RUN sed -i "s/UI.initSetting('autoconnect', false)/UI.initSetting('autoconnect', true)/" /usr/share/novnc/app/ui.js && \
+    sed -i "s/UI.initSetting('resize', 'off')/UI.initSetting('resize', 'remote')/" /usr/share/novnc/app/ui.js && \
+    sed -i "s/UI.initSetting('reconnect', false)/UI.initSetting('reconnect', true)/" /usr/share/novnc/app/ui.js && \
+    sed -i "s/UI.initSetting('reconnect_delay', 5000)/UI.initSetting('reconnect_delay', 1000)/" /usr/share/novnc/app/ui.js
+COPY novnc-index.html /usr/share/novnc/index.html
 
 # Download and install Kiro IDE
 ARG KIRO_VERSION=1.0.337
@@ -53,17 +71,29 @@ RUN wget -q "https://prod.download.desktop.kiro.dev/releases/stable/linux-x64/si
 RUN useradd -m -s /bin/bash -G sudo kiro \
     && echo "kiro ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+# Install Kiro CLI (for device code login flow)
+RUN apt-get update && apt-get install -y unzip && apt-get clean && rm -rf /var/lib/apt/lists/*
+USER kiro
+RUN curl -fsSL https://cli.kiro.dev/install | bash || true
+USER root
+RUN if [ -f /home/kiro/.local/bin/kiro-cli ]; then ln -sf /home/kiro/.local/bin/kiro-cli /usr/local/bin/kiro-cli; fi
+
 USER kiro
 WORKDIR /home/kiro
 
-# Set up VNC password (default: "kiro123", change via VNC_PASSWORD env var)
-RUN mkdir -p /home/kiro/.vnc \
-    && echo "kiro123" | vncpasswd -f > /home/kiro/.vnc/passwd \
-    && chmod 600 /home/kiro/.vnc/passwd
+# Set up VNC directories
+RUN mkdir -p /home/kiro/.vnc /home/kiro/.config/tigervnc
 
 # VNC startup config
 COPY --chown=kiro:kiro xstartup /home/kiro/.vnc/xstartup
 RUN chmod +x /home/kiro/.vnc/xstartup
+
+# Set Firefox as default browser so Kiro login links open correctly
+ENV BROWSER="google-chrome --no-sandbox"
+COPY --chown=kiro:kiro google-chrome.desktop /home/kiro/.local/share/applications/google-chrome.desktop
+COPY --chown=kiro:kiro helpers.rc /home/kiro/.config/xfce4/helpers.rc
+RUN xdg-mime default google-chrome.desktop x-scheme-handler/http && \
+    xdg-mime default google-chrome.desktop x-scheme-handler/https
 
 # Workspace directory for projects
 RUN mkdir -p /home/kiro/workspace

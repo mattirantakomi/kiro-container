@@ -1,10 +1,32 @@
 #!/bin/bash
+export DISPLAY=:1
 
-# Start XFCE desktop
-startxfce4 &
+# Disable screensaver/locker (they crash in containers)
+xset s off
+xset -dpms
+xset s noevent
 
-# Wait for desktop to be ready
-sleep 3
+# Start window manager
+xfwm4 --compositor=off &
 
-# Launch Kiro IDE automatically
-kiro-ide --no-sandbox /home/kiro/workspace &
+# Start panel
+xfce4-panel &
+
+# Start desktop
+xfdesktop &
+
+# Set Firefox as default browser for xdg-open
+export BROWSER="google-chrome --no-sandbox"
+xdg-settings set default-web-browser google-chrome.desktop 2>/dev/null || true
+
+# Launch Kiro IDE after desktop is ready, log output so login URL appears in docker logs
+(sleep 3 && kiro --no-sandbox /home/kiro/workspace > /tmp/kiro.log 2>&1) &
+
+# Watch Kiro's internal logs for OAuth login URL (visible via `docker logs kiro-ide -f`)
+(sleep 8 && while true; do
+  grep -rh "https://" /home/kiro/.config/Kiro/logs/*/main.log /home/kiro/.config/Kiro/logs/*/*/*.log /tmp/kiro.log 2>/dev/null | grep -i "device\|authorize\|login\|signin" | sort -u
+  sleep 3
+done) &
+
+# Keep session alive
+wait
