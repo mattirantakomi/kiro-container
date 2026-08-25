@@ -1,0 +1,19 @@
+services:
+  kiro-ide:
+    build: .
+    container_name: kiro-ide
+    ports:
+      - "5901:5901"   # VNC
+      - "6080:6080"   # noVNC (browser)
+    environment:
+      - VNC_PASSWORD=kiro123
+      - VNC_RESOLUTION=1920x1080
+    volumes:
+      - ./workspace:/home/kiro/workspace
+      - kiro-config:/home/kiro/.config
+    shm_size: "2gb"
+    security_opt:
+      - seccomp=unconfined
+
+volumes:
+  kiro-config:

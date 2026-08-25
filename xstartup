@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Start XFCE desktop
+startxfce4 &
+
+# Wait for desktop to be ready
+sleep 3
+
+# Launch Kiro IDE automatically
+kiro-ide --no-sandbox /home/kiro/workspace &
