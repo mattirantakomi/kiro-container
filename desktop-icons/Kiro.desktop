@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Kiro IDE
+Exec=kiro --no-sandbox /home/kiro/workspace
+Icon=/usr/share/pixmaps/kiro.png
+Terminal=false
+Categories=Development;IDE;

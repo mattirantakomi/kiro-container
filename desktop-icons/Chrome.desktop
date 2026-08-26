@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Google Chrome
+Exec=google-chrome --no-sandbox --disable-gpu
+Icon=google-chrome
+Terminal=false
+Categories=Network;WebBrowser;

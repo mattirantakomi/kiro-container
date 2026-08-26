@@ -1,32 +1,41 @@
 #!/bin/bash
 export DISPLAY=:1
 
-# Disable screensaver/locker (they crash in containers)
+# Disable glycin sandbox (crashes in containers trying to use bwrap)
+export GLYCIN_SANDBOX=off
+
+# Set Chrome as default browser
+export BROWSER="google-chrome --no-sandbox"
+xdg-settings set default-web-browser google-chrome.desktop 2>/dev/null || true
+
+# Disable screensaver
 xset s off
 xset -dpms
 xset s noevent
 
+# Start dbus session (required for XFCE components)
+eval $(dbus-launch --sh-syntax)
+export DBUS_SESSION_BUS_ADDRESS
+
 # Start window manager
 xfwm4 --compositor=off &
+sleep 1
 
-# Start panel
+# Start panel (taskbar with window list)
 xfce4-panel &
+sleep 1
 
-# Start desktop
+# Start desktop (shows icons)
 xfdesktop &
+sleep 2
 
-# Set Firefox as default browser for xdg-open
-export BROWSER="google-chrome --no-sandbox"
-xdg-settings set default-web-browser google-chrome.desktop 2>/dev/null || true
+# Mark desktop shortcuts as trusted
+chmod +x /home/kiro/Desktop/*.desktop 2>/dev/null
+gio set /home/kiro/Desktop/Kiro.desktop metadata::trusted true 2>/dev/null || true
+gio set /home/kiro/Desktop/Chrome.desktop metadata::trusted true 2>/dev/null || true
 
-# Launch Kiro IDE after desktop is ready, log output so login URL appears in docker logs
-(sleep 3 && kiro --no-sandbox /home/kiro/workspace > /tmp/kiro.log 2>&1) &
+# Launch Kiro IDE
+kiro --no-sandbox /home/kiro/workspace > /tmp/kiro.log 2>&1 &
 
-# Watch Kiro's internal logs for OAuth login URL (visible via `docker logs kiro-ide -f`)
-(sleep 8 && while true; do
-  grep -rh "https://" /home/kiro/.config/Kiro/logs/*/main.log /home/kiro/.config/Kiro/logs/*/*/*.log /tmp/kiro.log 2>/dev/null | grep -i "device\|authorize\|login\|signin" | sort -u
-  sleep 3
-done) &
-
-# Keep session alive
-wait
+# Keep alive
+while true; do sleep 60; done

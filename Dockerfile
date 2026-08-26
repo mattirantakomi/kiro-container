@@ -33,6 +33,9 @@ RUN apt-get update && apt-get install -y \
     libsecret-1-0 \
     libxss1 \
     xdg-utils \
+    # SVG/icon rendering (needed for XFCE panel)
+    librsvg2-common \
+    glib-networking \
     # Useful dev tools
     git \
     sudo \
@@ -47,6 +50,15 @@ RUN apt-get update && apt-get install -y \
     websockify \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Update icon/pixbuf caches (prevents crashes in XFCE panel)
+# Remove glycin-loaders which uses bwrap sandbox (crashes in Docker), reinstall XFCE deps
+RUN apt-get update && \
+    apt-get remove -y glycin-loaders glycin-thumbnailers libglycin-2-0 && \
+    apt-get install -y --fix-broken xfce4 xfce4-terminal librsvg2-2 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN gdk-pixbuf-query-loaders > /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache 2>/dev/null || true
+RUN gtk-update-icon-cache /usr/share/icons/hicolor 2>/dev/null || true
 
 # Install Google Chrome (real browser, not snap stub)
 RUN wget -q -O /tmp/chrome.deb "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \
@@ -82,7 +94,8 @@ USER kiro
 WORKDIR /home/kiro
 
 # Set up VNC directories
-RUN mkdir -p /home/kiro/.vnc /home/kiro/.config/tigervnc
+RUN mkdir -p /home/kiro/.vnc /home/kiro/.config/tigervnc /home/kiro/Desktop \
+    /home/kiro/.config/xfce4/xfconf/xfce-perchannel-xml
 
 # VNC startup config
 COPY --chown=kiro:kiro xstartup /home/kiro/.vnc/xstartup
@@ -97,6 +110,15 @@ RUN xdg-mime default google-chrome.desktop x-scheme-handler/http && \
 
 # Workspace directory for projects
 RUN mkdir -p /home/kiro/workspace
+
+# Desktop shortcuts
+COPY --chown=kiro:kiro desktop-icons/Kiro.desktop /home/kiro/Desktop/Kiro.desktop
+COPY --chown=kiro:kiro desktop-icons/Chrome.desktop /home/kiro/Desktop/Chrome.desktop
+RUN chmod +x /home/kiro/Desktop/*.desktop
+
+# Panel config (taskbar with window list)
+COPY --chown=kiro:kiro panel-config/xfce4-panel.xml /home/kiro/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
+COPY --chown=kiro:kiro panel-config/xfce4-desktop.xml /home/kiro/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
 
 # Expose VNC port and noVNC port
 EXPOSE 5901 6080

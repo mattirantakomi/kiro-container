@@ -15,3 +15,6 @@ services:
     shm_size: "2gb"
     security_opt:
       - seccomp=unconfined
+      - apparmor=unconfined
+    cap_add:
+      - SYS_ADMIN
