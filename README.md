@@ -5,10 +5,11 @@ A Docker container running Kiro IDE with a VNC server. This allows you to use th
 ## Features
 
 - Based on Ubuntu 26.04 LTS (Resolute Raccoon)
-- Kiro IDE pre-installed
-- TigerVNC server (port 5901)
-- noVNC web client (port 6080) — accessible via browser
-- XFCE4 desktop environment (lightweight)
+- Kiro IDE pre-installed and launches automatically
+- Google Chrome for OAuth login (opens inside the container)
+- TigerVNC server (port 5901, no password)
+- noVNC web client (port 6080) — accessible via browser, auto-connects
+- XFCE4 desktop with taskbar and desktop shortcuts
 - Project files mounted from `./workspace`
 
 ## Getting Started
@@ -19,21 +20,15 @@ docker compose up --build
 
 ## Connecting
 
-### Via Browser (noVNC)
+Open in browser: http://localhost:6080
 
-Open: http://localhost:6080
+noVNC auto-connects and scales to your browser window. No password needed.
 
-### Via VNC Client
+Alternatively, use a VNC client: `localhost:5901` (no password)
 
-Connect to: `localhost:5901` (no password)
+## Signing In
 
-## Kiro IDE
-
-Kiro IDE launches automatically when the container starts. If you need to restart it manually, open a terminal in the desktop and run:
-
-```bash
-kiro --no-sandbox
-```
+When Kiro prompts for sign-in, click the link inside the Kiro window. Google Chrome will open inside the container and handle the OAuth flow. Complete the AWS Builder ID login there.
 
 ## Environment Variables
 
@@ -47,7 +42,8 @@ The `./workspace` folder is mounted into the container at `/home/kiro/workspace`
 
 ## Notes
 
-- `shm_size: 2gb` is important for Chromium/Electron-based apps (prevents crashes)
-- `seccomp=unconfined` is needed for Electron sandbox to work inside the container
-- `--no-sandbox` flag is required to run Kiro IDE inside Docker
-- Kiro requires an AWS account for sign-in (browser-based OAuth)
+- All session data (Kiro config, browser profile) is cleaned on every container start for a fresh login
+- `shm_size: 2gb` is required for Chromium/Electron apps (prevents crashes)
+- `SYS_ADMIN` capability is needed for XFCE's icon rendering (glycin/bubblewrap sandbox)
+- Desktop shortcuts for Kiro IDE and Chrome are on the desktop
+- Taskbar at the top shows running windows (click to restore minimized apps)
