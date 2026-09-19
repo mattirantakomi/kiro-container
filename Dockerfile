@@ -48,6 +48,9 @@ RUN apt-get update && apt-get install -y \
     # noVNC for browser-based access (optional)
     novnc \
     websockify \
+    # Xpra dependencies (xpra itself installed from official repo below)
+    apt-transport-https \
+    software-properties-common \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -59,6 +62,15 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN gdk-pixbuf-query-loaders > /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache 2>/dev/null || true
 RUN gtk-update-icon-cache /usr/share/icons/hicolor 2>/dev/null || true
+
+# Install Xpra from official repo (Ubuntu 26.04 = "resolute")
+RUN apt-get update && apt-get install -y ca-certificates wget && \
+    wget -O /usr/share/keyrings/xpra.asc https://xpra.org/xpra.asc && \
+    DISTRO="resolute" && \
+    wget -O /etc/apt/sources.list.d/xpra.sources \
+        "https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/${DISTRO}/xpra.sources" && \
+    apt-get update && apt-get install -y xpra && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Google Chrome (real browser, not snap stub)
 RUN wget -q -O /tmp/chrome.deb "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \
@@ -93,9 +105,10 @@ RUN if [ -f /home/kiro/.local/bin/kiro-cli ]; then ln -sf /home/kiro/.local/bin/
 USER kiro
 WORKDIR /home/kiro
 
-# Set up VNC directories
+# Set up VNC and xpra directories
 RUN mkdir -p /home/kiro/.vnc /home/kiro/.config/tigervnc /home/kiro/Desktop \
-    /home/kiro/.config/xfce4/xfconf/xfce-perchannel-xml
+    /home/kiro/.config/xfce4/xfconf/xfce-perchannel-xml \
+    /home/kiro/.xpra
 
 # VNC startup config
 COPY --chown=kiro:kiro xstartup /home/kiro/.vnc/xstartup
@@ -120,8 +133,8 @@ RUN chmod +x /home/kiro/Desktop/*.desktop
 COPY --chown=kiro:kiro panel-config/xfce4-panel.xml /home/kiro/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
 COPY --chown=kiro:kiro panel-config/xfce4-desktop.xml /home/kiro/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
 
-# Expose VNC port and noVNC port
-EXPOSE 5901 6080
+# Expose VNC port, noVNC port, and xpra port
+EXPOSE 5901 6080 14500
 
 # Entrypoint script
 COPY --chown=kiro:kiro entrypoint.sh /home/kiro/entrypoint.sh

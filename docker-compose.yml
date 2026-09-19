@@ -5,11 +5,13 @@ services:
     ports:
       - "5901:5901"   # VNC
       - "6080:6080"   # noVNC (browser)
+      - "14500:14500" # xpra (native window forwarding)
     dns:
       - 8.8.8.8
       - 1.1.1.1
     environment:
       - VNC_RESOLUTION=1920x1080
+      # - XPRA_PORT=14500  # uncomment to override xpra port
     volumes:
       - ./workspace:/home/kiro/workspace
     shm_size: "2gb"
