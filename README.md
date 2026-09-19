@@ -13,52 +13,52 @@ A Docker container running Kiro IDE with a VNC server and xpra support. This all
 - XFCE4 desktop with taskbar and desktop shortcuts
 - Project files mounted from `./workspace`
 
-## Mitä Kiro on?
+## What is Kiro?
 
-Kiro on AWS:n kehittämä agentinen IDE, joka rakentuu VS Code -ytimen päälle. Se on suunniteltu viemään AI-avusteinen koodaus pidemmälle kuin tavallinen copilot: sen sijaan että se vain täydentää koodia, se suunnittelee, toteuttaa ja varmistaa kokonaisuuksia itsenäisesti.
+Kiro is an agentic IDE developed by AWS, built on top of VS Code. It goes beyond a typical AI copilot: instead of just completing code, it plans, implements, and verifies work autonomously.
 
-### Keskeiset ominaisuudet
+### Key features
 
-**Autopilot-tila**
-Kiro toimii itsenäisesti laajoissakin tehtävissä ilman jatkuvaa ohjausta. Se voi lukea koodipohjaa, tehdä muutoksia useisiin tiedostoihin, ajaa komentoja terminaalissa ja korjata virheitä kierros toisensa jälkeen — käyttäjä seuraa muutoksia ja voi peruuttaa tai katkaista milloin tahansa. Vaihtoehtona on **Supervised-tila**, jossa Kiro pyytää hyväksynnän jokaisen muutoksen kohdalla.
+**Autopilot mode**
+Kiro works independently on large tasks without step-by-step guidance. It can read the codebase, make changes across multiple files, run terminal commands, and fix errors iteratively — all while you watch the changes and can revert or interrupt at any time. The alternative is **Supervised mode**, where Kiro asks for approval before each change, presenting diffs as individual hunks you can accept or reject.
 
-**Spec-vetoinen kehitys**
-Spec-sessioissa Kiro muuttaa vapaamuotoisen kuvauksen ensin vaatimuksiksi, sitten arkkitehtuurisuunnitelmaksi ja lopuksi järjestetyksi tehtävälistaksi — jonka se toteuttaa itsenäisesti. Tämä lähestymistapa tuottaa ylläpidettävämpää koodia ja sopii erityisesti monimutkaisiin ominaisuuksiin.
+**Spec-driven development**
+In spec sessions, Kiro turns a free-form description into requirements, then an architecture design, then a sequenced task list — which it implements autonomously. This approach produces more maintainable code and works especially well for complex features.
 
-**Agentit ja hookit**
-Kiro tukee omia agentteja (`.kiro/agents/`), jotka voidaan käynnistää automaattisesti tapahtumilla (tiedoston tallennus, session aloitus, tehtävän valmistuminen jne.). Tämä mahdollistaa esimerkiksi automaattisen linttauksen tai testauksen ilman manuaalista käynnistystä.
+**Agents and hooks**
+Kiro supports custom agents (`.kiro/agents/`) that can be triggered automatically by events — file save, session start, task completion, and more. This enables things like automatic linting or test runs without any manual trigger.
 
-**Steering-tiedostot**
-Projektikohtaiset ohjeet, koodausstandardit ja konteksti voidaan kirjoittaa `.kiro/steering/*.md`-tiedostoihin, jotka Kiro lukee automaattisesti jokaisessa sessiossa.
+**Steering files**
+Project-specific instructions, coding standards, and context can be written to `.kiro/steering/*.md` files, which Kiro reads automatically in every session.
 
-**MCP-tuki**
-Model Context Protocol -palvelimia voidaan liittää Kiroon, jolloin agentilla on pääsy ulkoisiin työkaluihin ja dataan (tietokannat, API:t, dokumentaatio jne.).
+**MCP support**
+Model Context Protocol servers can be attached to Kiro, giving the agent access to external tools and data sources (databases, APIs, documentation, etc.).
 
-**Muuta**
-- Kuvien ja dokumenttien liittäminen chattiin (UI-mockup → toteutus)
-- Realtime-koodimuutosten näyttäminen diff-näkymässä
-- Automaattiset commit-viestit suoraan lähdekoodi-paneelista
-- Älykkäät virheanalyysit syntaksi-, tyyppi- ja semantiikkavirheille
-- Per-prompt -krediittien kulutus näkyy reaaliajassa
+**Other highlights**
+- Attach images and documents to chat (e.g. UI mockup → implementation)
+- Real-time code change diffs as the agent works
+- One-click commit message generation from the source control panel
+- Intelligent error diagnostics for syntax, type, and semantic errors
+- Per-prompt credit usage shown in real time
 
-### Tuetut kielimallit
+### Supported language models
 
-Kiro tarjoaa pääsyn Anthropicin, OpenAI:n ja avoimen lähdekoodin malleihin. Mallin voi vaihtaa sessiokohtaisesti:
+Kiro provides access to frontier and open-weight models from Anthropic, OpenAI, and other providers. The model can be changed per session:
 
-| Malli | Kuvaus |
-|-------|--------|
-| **Auto** | Oletusvalinta — reitittää automaattisesti frontier-malleihin (Sonnet + erikoistuneet mallit) latenssin, laadun ja kustannusten tasapainottamiseksi |
-| **Claude Opus 4.8** | Luotettava huippumalli vaativaan koodaukseen ja päättelyyn |
-| **Claude Sonnet 5** | Nopea ja tasapainoinen, lähestyy Opus-tasoa tehokkaammalla tokeninkäytöllä |
-| **Claude Sonnet 4.5** | Saatavilla ilmaiselle tasolle |
-| **GPT-5.6 Sol** | OpenAI:n lippulaivamalli, uusin lisäys — huipputulos pitkissä monivaiheisissa tehtävissä (272K konteksti) |
-| **GPT-5.6 Terra** | Tasapainoinen vaihtoehto Sol:lle pienemmällä hinnalla |
-| **GPT-5.6 Luna** | Kustannustehokkain OpenAI-vaihtoehto, suoriutuu silti Opus 4.8:a paremmin |
-| **Qwen3 Coder Next** | Avoin malli, saatavilla kaikille tasoille |
-| **DeepSeek 3.2** | Avoin malli, saatavilla kaikilla tasoilla |
-| **MiniMax M2.1** | Avoin malli, monikielinen tuki, saatavilla kaikilla tasoilla |
+| Model | Description |
+|-------|-------------|
+| **Auto** | Default — routes automatically to frontier models (Sonnet + specialized models) to balance quality, latency, and cost |
+| **Claude Opus 4.8** | Reliable top-tier model for demanding coding and reasoning tasks |
+| **Claude Sonnet 5** | Fast and balanced, approaches Opus-level quality with better token efficiency |
+| **Claude Sonnet 4.5** | Available on the free tier |
+| **GPT-5.6 Sol** | OpenAI's flagship model — top benchmark results for long multi-step tasks (272K context) |
+| **GPT-5.6 Terra** | Balanced alternative to Sol at a lower cost |
+| **GPT-5.6 Luna** | Most cost-efficient OpenAI option, still outperforms Opus 4.8 on coding benchmarks |
+| **Qwen3 Coder Next** | Open-weight model, available on all plans |
+| **DeepSeek 3.2** | Open-weight model, available on all plans |
+| **MiniMax M2.1** | Open-weight model with multilingual support, available on all plans |
 
-> Mallien saatavuus vaihtelee tilauksen tason ja alueen mukaan. Ilmaistasolla on pääsy Claude Sonnet 4.5:een ja avoimiin malleihin.
+> Model availability varies by subscription tier and region. The free tier includes Claude Sonnet 4.5 and the open-weight models.
 
 ## Getting Started
 
@@ -74,19 +74,19 @@ Xpra forwards the Kiro IDE window directly into your Ubuntu desktop. The window 
 
 **Install xpra on your Ubuntu host** (once):
 
-> **Tärkeää:** Käytä xpra.org:n virallista repoa, älä Ubuntu:n omaa pakettia. Ubuntu 22.04:n
-> vakiopaketti on versio 3.x, mutta container ajaa versiota 6.x — versioero aiheuttaa
-> `invalid compression: zlib is not available` -virheen yhdistettäessä.
+> **Important:** Use the official xpra.org repository, not the Ubuntu package. Ubuntu 22.04's
+> default package is version 3.x, but the container runs version 6.x — the version mismatch
+> causes a `disconnect invalid compression: zlib is not available` error on connect.
 
 ```bash
-# Selvitä Ubuntu-versiotunniste:
+# Find your Ubuntu codename:
 # jammy = 22.04, noble = 24.04, oracular = 24.10, resolute = 26.04
-DISTRO="jammy"   # <-- muuta tähän oma versiosi
+DISTRO="jammy"   # <-- change this to match your Ubuntu version
 
-# Poista vanha ubuntu-paketti jos asennettu
+# Remove the old Ubuntu package if installed
 sudo apt remove -y xpra 2>/dev/null || true
 
-# Lisää xpra.org:n virallinen repo
+# Add the official xpra.org repository
 sudo apt install -y ca-certificates wget
 sudo wget -O /usr/share/keyrings/xpra.asc https://xpra.org/xpra.asc
 sudo wget -O /etc/apt/sources.list.d/xpra.sources \
